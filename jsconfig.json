@@ -1,0 +1,7 @@
+{
+    "compilerOptions": {
+        "lib": ["dom", "esnext"],
+        "checkJs": true
+    },
+    "exclude": [".vscode", "node_modules", "build"]
+}

@@ -1,0 +1,22 @@
+{
+    "name": "flow-editor",
+    "version": "0.0.1",
+    "main": "build/flow-editor.js",
+    "scripts": {
+        "dev": "npx webpack --env.NODE_ENV=development --watch",
+        "build": "npx webpack --env.NODE_ENV=production --progress"
+    },
+    "repository": "git@github.com:lisiur/flow-editor.git",
+    "author": "lisiurday <lisiurday@gmail.com>",
+    "license": "MIT",
+    "devDependencies": {
+        "cross-env": "^5.2.0",
+        "source-map": "^0.7.3",
+        "webpack": "^4.29.6",
+        "webpack-cli": "^3.3.0"
+    },
+    "peerDependencies": {},
+    "dependencies": {
+        "uuid": "^3.3.2"
+    }
+}
