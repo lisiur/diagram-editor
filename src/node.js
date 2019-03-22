@@ -1,22 +1,27 @@
 import { v1 as uuid } from "uuid"
 import Interface from "./interface"
 import EventBase from "./eventBase"
+import * as U from "./util"
 const jsPlumb = window.jsPlumb
 export default class Node extends EventBase {
     /**
      * @param {object} params
-     * @param {Interface} params.interface
-     * @param {Node[]} params.ancestors
-     * @param {Node[]} params.successors
      * @param {Element} params.container
+     * @param {string} [params.uuid]
+     * @param {Interface} params.interface
+     * @param {String[]} [params.ancestors]
+     * @param {String[]} [params.successors]
      * @param {string} [params.className]
      * @param {object} [params.parameters]
      * @param {object} [params.parameters]
+     * @param {object} params.position
+     * @param {number} params.position.x
+     * @param {number} params.position.y
      */
     constructor(params) {
         super()
 
-        this.uuid = uuid()
+        this.uuid = params.uuid || uuid()
         this.container = params.container
 
         const element = document.createElement("div")
@@ -28,9 +33,14 @@ export default class Node extends EventBase {
             )
         })
         params.container.appendChild(element)
+        const { width, height } = element.getBoundingClientRect()
+        element.style.left = `${params.position.x - width / 2}px`
+        element.style.top = `${params.position.y - height / 2}px`
 
         this.interface = params.interface || new Interface()
+        /** @type {String[]} */
         this.ancestors = params.ancestors || []
+        /** @type {String[]} */
         this.successors = params.successors || []
 
         const isTarget = params.interface.input.length > 0
@@ -122,4 +132,38 @@ export default class Node extends EventBase {
         }
         jsPlumb.draggable(element)
     }
+
+    /**
+     * @param {string} uuid
+     */
+    addAncestors(uuid) {
+        this.ancestors.push(uuid)
+    }
+
+    /**
+     * @param {string} uuid
+     */
+    removeAncestors(uuid) {
+        this.ancestors = this.ancestors.filter(U.eq(uuid))
+    }
+
+    /**
+     * @param {string} uuid
+     */
+    addSuccessors(uuid) {
+        this.successors.push(uuid)
+    }
+
+    /**
+     * @param {string} uuid
+     */
+    removeSuccessors(uuid) {
+        this.successors = this.successors.filter(U.eq(uuid))
+    }
 }
+
+Node.isSame = U.compose(
+    U.spread(U.eq),
+    U.map(U.prop("uuid")),
+    U.together
+)

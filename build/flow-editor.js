@@ -368,16 +368,43 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _node__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./node */ "./src/node.js");
 /* harmony import */ var _interface__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./interface */ "./src/interface.js");
 /* harmony import */ var _eventBase__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./eventBase */ "./src/eventBase.js");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./util */ "./src/util.js");
+
 
 
 
 const jsPlumb = window.jsPlumb
 class Editor extends _eventBase__WEBPACK_IMPORTED_MODULE_2__["default"] {
+    /**
+     *
+     * @param {object} params
+     * @param {string} params.container
+     * @param {string} params.dragClass
+     */
     constructor(params) {
         super()
 
+        /** @type {Array.<HTMLElement>} */
+        this.dragElements = []
+        this.dragClass = params.dragClass
+
         /** @type {Array.<Node>} */
         this.nodes = []
+
+        this.interfaces = {
+            start: new _interface__WEBPACK_IMPORTED_MODULE_1__["default"]({
+                input: [],
+                output: "id",
+            }),
+            middle: new _interface__WEBPACK_IMPORTED_MODULE_1__["default"]({
+                input: ["id"],
+                output: "id",
+            }),
+            end: new _interface__WEBPACK_IMPORTED_MODULE_1__["default"]({
+                input: ["id"],
+                output: "",
+            }),
+        }
 
         jsPlumb.ready(() => {
             this.container = document.getElementById(params.container)
@@ -385,36 +412,79 @@ class Editor extends _eventBase__WEBPACK_IMPORTED_MODULE_2__["default"] {
         })
     }
     init() {
-        // NOTE: disable default contextmenu
-        this.container.addEventListener("contextmenu", e => e.preventDefault())
+        this.initDragElement()
+        this.initJsplumb()
+    }
+
+    initDragElement() {
+        this.dragElements = Array.from(
+            document.querySelectorAll(`.${this.dragClass}`)
+        )
+        this.dragElements.forEach(el => {
+            el.draggable = true
+            el.addEventListener("dragstart", ev => {
+                ev.dataTransfer.setData("text/plain", el.dataset.type)
+            })
+        })
+        this.container.addEventListener("drop", e => {
+            /** node interface */
+            const type = e.dataTransfer.getData("text/plain")
+
+            /** node position */
+            const { layerX, layerY } = e
+
+            this.addNode({
+                interface: type,
+                position: {
+                    x: layerX,
+                    y: layerY,
+                },
+            })
+        })
+        this.container.addEventListener("dragover", e => {
+            e.preventDefault()
+        })
+    }
+
+    initJsplumb() {
         jsPlumb.setContainer(this.container)
+        jsPlumb.bind("connection", function(info) {
+            const { connection } = info
+            const { source, target } = connection.getParameters()
+
+            /** @type {Node} */
+            const sourceNode = source.node
+
+            /** @type {Node} */
+            const targetNode = target.node
+
+            sourceNode.addSuccessors(targetNode.uuid)
+            targetNode.addAncestors(sourceNode.uuid)
+        })
+
         jsPlumb.bind("beforeDrop", function(info, _) {
             const [source] = info.connection.endpoints
             const target = info.dropEndpoint
-            if (
-                source.getParameters()["source"]["node"] ===
-                target.getParameters()["target"]["node"]
-            ) {
-                return false
-            }
-            return true
+            return _util__WEBPACK_IMPORTED_MODULE_3__["notEq"](
+                _util__WEBPACK_IMPORTED_MODULE_3__["pipe"](
+                    _util__WEBPACK_IMPORTED_MODULE_3__["prop"]("source"),
+                    _util__WEBPACK_IMPORTED_MODULE_3__["prop"]("node")
+                )(source.getParameters()),
+                _util__WEBPACK_IMPORTED_MODULE_3__["pipe"](
+                    _util__WEBPACK_IMPORTED_MODULE_3__["prop"]("target"),
+                    _util__WEBPACK_IMPORTED_MODULE_3__["prop"]("node")
+                )(target.getParameters())
+            )
         })
+
+        // disable default contextmenu
+        this.container.addEventListener("contextmenu", e => e.preventDefault())
         jsPlumb.bind("contextmenu", function(component) {
             console.log(component)
         })
     }
-    addNode() {
-        const node = new _node__WEBPACK_IMPORTED_MODULE_0__["default"]({
-            interface: new _interface__WEBPACK_IMPORTED_MODULE_1__["default"]({
-                input: ["id"],
-                output: "id",
-            }),
-            ancestors: [],
-            successors: [],
-            container: this.container,
-            className: "item",
-        })
-        this.nodes.push(node)
+
+    registerNodeEvent(node) {
         ;["contextmenu", "click", "dblclick"].forEach(eventName => {
             node.on(
                 eventName,
@@ -422,6 +492,32 @@ class Editor extends _eventBase__WEBPACK_IMPORTED_MODULE_2__["default"] {
                 this
             )
         })
+    }
+    /**
+     *
+     * @param {object} params
+     * @param {string} params.interface
+     * @param {object} params.position
+     * @param {number} params.position.x
+     * @param {number} params.position.y
+     */
+    addNode(params) {
+        params = Object.assign(
+            {
+                interface: "middle",
+                container: this.container,
+            },
+            params
+        )
+        const node = new _node__WEBPACK_IMPORTED_MODULE_0__["default"]({
+            interface: this.interfaces[params.interface],
+            container: this.container,
+            className: "item",
+            position: params.position || { x: 0, y: 0 },
+        })
+        this.nodes.push(node)
+        this.registerNodeEvent(node)
+        return node
     }
 }
 
@@ -476,14 +572,21 @@ class EventBase {
 /*!**********************!*\
   !*** ./src/index.js ***!
   \**********************/
-/*! exports provided: default */
+/*! exports provided: Editor, Node, default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _editor__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./editor */ "./src/editor.js");
+/* harmony import */ var _node__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./node */ "./src/node.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Node", function() { return _node__WEBPACK_IMPORTED_MODULE_0__["default"]; });
 
-/* harmony default export */ __webpack_exports__["default"] = (_editor__WEBPACK_IMPORTED_MODULE_0__["default"]);
+/* harmony import */ var _editor__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./editor */ "./src/editor.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Editor", function() { return _editor__WEBPACK_IMPORTED_MODULE_1__["default"]; });
+
+
+
+
+/* harmony default export */ __webpack_exports__["default"] = (_editor__WEBPACK_IMPORTED_MODULE_1__["default"]);
 
 
 /***/ }),
@@ -603,6 +706,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var uuid__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(uuid__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _interface__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./interface */ "./src/interface.js");
 /* harmony import */ var _eventBase__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./eventBase */ "./src/eventBase.js");
+/* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./util */ "./src/util.js");
+
 
 
 
@@ -610,18 +715,22 @@ const jsPlumb = window.jsPlumb
 class Node extends _eventBase__WEBPACK_IMPORTED_MODULE_2__["default"] {
     /**
      * @param {object} params
-     * @param {Interface} params.interface
-     * @param {Node[]} params.ancestors
-     * @param {Node[]} params.successors
      * @param {Element} params.container
+     * @param {string} [params.uuid]
+     * @param {Interface} params.interface
+     * @param {String[]} [params.ancestors]
+     * @param {String[]} [params.successors]
      * @param {string} [params.className]
      * @param {object} [params.parameters]
      * @param {object} [params.parameters]
+     * @param {object} params.position
+     * @param {number} params.position.x
+     * @param {number} params.position.y
      */
     constructor(params) {
         super()
 
-        this.uuid = Object(uuid__WEBPACK_IMPORTED_MODULE_0__["v1"])()
+        this.uuid = params.uuid || Object(uuid__WEBPACK_IMPORTED_MODULE_0__["v1"])()
         this.container = params.container
 
         const element = document.createElement("div")
@@ -633,9 +742,14 @@ class Node extends _eventBase__WEBPACK_IMPORTED_MODULE_2__["default"] {
             )
         })
         params.container.appendChild(element)
+        const { width, height } = element.getBoundingClientRect()
+        element.style.left = `${params.position.x - width / 2}px`
+        element.style.top = `${params.position.y - height / 2}px`
 
         this.interface = params.interface || new _interface__WEBPACK_IMPORTED_MODULE_1__["default"]()
+        /** @type {String[]} */
         this.ancestors = params.ancestors || []
+        /** @type {String[]} */
         this.successors = params.successors || []
 
         const isTarget = params.interface.input.length > 0
@@ -727,7 +841,169 @@ class Node extends _eventBase__WEBPACK_IMPORTED_MODULE_2__["default"] {
         }
         jsPlumb.draggable(element)
     }
+
+    /**
+     * @param {string} uuid
+     */
+    addAncestors(uuid) {
+        this.ancestors.push(uuid)
+    }
+
+    /**
+     * @param {string} uuid
+     */
+    removeAncestors(uuid) {
+        this.ancestors = this.ancestors.filter(_util__WEBPACK_IMPORTED_MODULE_3__["eq"](uuid))
+    }
+
+    /**
+     * @param {string} uuid
+     */
+    addSuccessors(uuid) {
+        this.successors.push(uuid)
+    }
+
+    /**
+     * @param {string} uuid
+     */
+    removeSuccessors(uuid) {
+        this.successors = this.successors.filter(_util__WEBPACK_IMPORTED_MODULE_3__["eq"](uuid))
+    }
 }
+
+Node.isSame = _util__WEBPACK_IMPORTED_MODULE_3__["compose"](
+    _util__WEBPACK_IMPORTED_MODULE_3__["spread"](_util__WEBPACK_IMPORTED_MODULE_3__["eq"]),
+    _util__WEBPACK_IMPORTED_MODULE_3__["map"](_util__WEBPACK_IMPORTED_MODULE_3__["prop"]("uuid")),
+    _util__WEBPACK_IMPORTED_MODULE_3__["together"]
+)
+
+
+/***/ }),
+
+/***/ "./src/util.js":
+/*!*********************!*\
+  !*** ./src/util.js ***!
+  \*********************/
+/*! exports provided: partial, curryN, curry, compose, pipe, unary, isNil, id, eq, not, notEq, map, prop, spread, ifElse, T, F, together, tap, debug */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "partial", function() { return partial; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "curryN", function() { return curryN; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "curry", function() { return curry; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "compose", function() { return compose; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "pipe", function() { return pipe; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "unary", function() { return unary; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isNil", function() { return isNil; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "id", function() { return id; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "eq", function() { return eq; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "not", function() { return not; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "notEq", function() { return notEq; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "map", function() { return map; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "prop", function() { return prop; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "spread", function() { return spread; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ifElse", function() { return ifElse; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "T", function() { return T; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "F", function() { return F; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "together", function() { return together; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "tap", function() { return tap; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "debug", function() { return debug; });
+/**
+ * @param {function} fn
+ * @param {array} args
+ */
+const partial = (fn, args) => {
+    return function() {
+        return fn.apply(null, args.concat(Array.from(arguments)))
+    }
+}
+
+/**
+ * curryN.
+ * @param {function} fn
+ * @param {number} n
+ */
+const curryN = (fn, n) => {
+    return function() {
+        let args = Array.from(arguments)
+        if (n <= args.length) {
+            return fn.apply(null, args)
+        }
+        return curryN(partial(fn, args), n - args.length)
+    }
+}
+
+/**
+ * curry.
+ * @param {function} fn
+ */
+const curry = fn => curryN(fn, fn.length)
+
+/**
+ * compose.
+ */
+const compose = function(...fns) {
+    return function() {
+        let index = fns.length - 1
+        let result = fns[index--].apply(null, arguments)
+        while (index >= 0) {
+            result = fns[index--].call(null, result)
+        }
+        return result
+    }
+}
+
+/**
+ * @param  {...function} fns
+ */
+const pipe = (...fns) => compose(...fns.reverse())
+
+const unary = fn => (...args) => fn(args[0])
+
+const isNil = a => a === undefined || a === null
+
+const id = a => a
+
+const _eq = (a, b) => a === b
+const eq = curry(_eq)
+
+const _not = a => !a
+const not = curry(_not)
+
+const _notEq = compose(
+    not,
+    eq
+)
+const notEq = curry(_notEq)
+
+const _map = (fn, arr) => arr.map(unary(fn))
+const map = curry(_map)
+
+const _prop = (propName, obj) => {
+    return obj[propName]
+}
+const prop = curry(_prop)
+
+const _spread = (fn, arr) => fn(...arr)
+const spread = curry(_spread)
+
+const ifElse = (check, trueHandler, falseHandler, ...args) =>
+    check(...args) ? trueHandler(...args) : falseHandler(...args)
+
+const T = () => true
+
+const F = () => false
+
+const together = (...args) => args
+
+const _tap = (fn, a) => {
+    fn(a)
+    return a
+}
+const tap = curry(_tap)
+
+const debug = curry(tap)(console.log)
 
 
 /***/ })

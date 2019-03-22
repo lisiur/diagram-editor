@@ -449,6 +449,7 @@ declare module jsPlumb {
         setLabel(s: string): void
         getElement(): Connection
         repaint(): void
+        getParameters(): any
     }
 
     /* -------------------------------------------- CONNECTORS ---------------------------------------------------- */
