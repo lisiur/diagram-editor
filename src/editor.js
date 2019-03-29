@@ -22,27 +22,27 @@ export default class Editor extends EventBase {
         name: 'any',
         input: ['any'],
         output: 'any'
-      }),
-      readTable: new Interface({
-        name: 'readTable',
-        input: [],
-        output: 'id'
-      }),
-      sort: new Interface({
-        name: 'sort',
-        input: ['id'],
-        output: 'id'
-      }),
-      filter: new Interface({
-        name: 'filter',
-        input: ['id'],
-        output: 'id'
-      }),
-      write: new Interface({
-        name: 'write',
-        input: ['id'],
-        output: ''
       })
+      // readTable: new Interface({
+      //   name: 'readTable',
+      //   input: [],
+      //   output: 'id'
+      // }),
+      // sort: new Interface({
+      //   name: 'sort',
+      //   input: ['id'],
+      //   output: 'id'
+      // }),
+      // filter: new Interface({
+      //   name: 'filter',
+      //   input: ['id'],
+      //   output: 'id'
+      // }),
+      // write: new Interface({
+      //   name: 'write',
+      //   input: ['id'],
+      //   output: ''
+      // })
     }
 
     /** @type {Array.<Node>} */
@@ -200,6 +200,22 @@ export default class Editor extends EventBase {
       Node.addLink(node, this.endNode)
     }
     return node
+  }
+
+  /**
+   *
+   * @param {Interface} interfaceDef
+   */
+  registerInterface (interfaceDef) {
+    this.interfaces[interfaceDef.name] = interfaceDef
+  }
+
+  /**
+   *
+   * @param {Interface[]} interfaceDefs
+   */
+  registerInterfaces (interfaceDefs) {
+    interfaceDefs.forEach(this.registerInterface)
   }
 
   toBPMNXml () {

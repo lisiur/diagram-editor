@@ -4,15 +4,6 @@
  * @property {boolean} required
  */
 
-/**
- * @type {Array.<Type>}
- */
-const TYPES = [
-  {
-    name: 'id',
-    required: false
-  }
-]
 export default class Interface {
   /**
      *
@@ -22,25 +13,9 @@ export default class Interface {
      * @param {string} params.output
      */
   constructor (params) {
-    const newParams = Object.assign(
-      {
-        name: 'any',
-        input: ['id'],
-        output: 'id'
-      },
-      params
-    )
-    this.name = newParams.name
-    this.input = newParams.input
-    this.output = newParams.output
-  }
-
-  getInputTypes () {
-    return this.input.map(input => TYPES.find(it => it.name === input))
-  }
-
-  getOutputType () {
-    return TYPES.find(it => it.name === this.output)
+    this.name = params.name
+    this.input = params.input
+    this.output = params.output
   }
 
   /**
@@ -57,18 +32,6 @@ export default class Interface {
     this.output = output
   }
 }
-Interface.defineType =
-    /**
-     * @param {Type} type
-     */
-    function (type) {
-      let oldIndex = TYPES.findIndex(it => Interface.isSameType(type, it))
-      if (oldIndex !== -1) {
-        console.warn(`类型[${type.name}]被覆盖`)
-        TYPES.splice(oldIndex, 1)
-      }
-      TYPES.push(type)
-    }
 
 Interface.validate =
     /**

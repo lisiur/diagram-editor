@@ -6,11 +6,17 @@ namespace Editor {
     successors?: [string]
     position?: { x: number; y: number }
   }
-  class Node {
+  interface InterfaceParams {
+    name: string
+    input: [string]
+    output: string
   }
+  class Node {}
   class Editor {
     constructor({ container: string, dragClass: string })
     addNode(params: addNodeParams): Node
+    registerInterface(params: InterfaceParams): void
+    registerInterfaces(params: [InterfaceParams]): void
     toBPMNXml(): string
   }
 }
