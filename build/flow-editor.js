@@ -27969,6 +27969,7 @@ function (_EventBase) {
      * @param {object} params
      * @param {string|Element} params.container
      * @param {string} params.dragClass
+     * @param {string} [params.nodePrefix]
      */
   function Editor(params) {
     var _this;
@@ -27980,32 +27981,13 @@ function (_EventBase) {
 
     _this.dragElements = [];
     _this.dragClass = params.dragClass;
+    _this.nodePrefix = params.nodePrefix || 'interface-';
     _this.interfaces = {
       any: new _interface__WEBPACK_IMPORTED_MODULE_1__["default"]({
         name: 'any',
         input: ['any'],
         output: 'any'
-      }) // readTable: new Interface({
-      //   name: 'readTable',
-      //   input: [],
-      //   output: 'id'
-      // }),
-      // sort: new Interface({
-      //   name: 'sort',
-      //   input: ['id'],
-      //   output: 'id'
-      // }),
-      // filter: new Interface({
-      //   name: 'filter',
-      //   input: ['id'],
-      //   output: 'id'
-      // }),
-      // write: new Interface({
-      //   name: 'write',
-      //   input: ['id'],
-      //   output: ''
-      // })
-
+      })
       /** @type {Array.<Node>} */
 
     };
@@ -28149,6 +28131,7 @@ function (_EventBase) {
        * @param {object} params
        * @param {boolean} [params.virtual]
        * @param {string} [params.uuid]
+       * @param {string} [params.className]
        * @param {string} [params.interface]
        * @param {String[]} [params.ancestors]
        * @param {String[]} [params.successors]
@@ -28173,7 +28156,7 @@ function (_EventBase) {
       var node = new _node__WEBPACK_IMPORTED_MODULE_0__["default"]({
         interface: this.interfaces[params.interface],
         container: this.container,
-        className: 'item',
+        className: params.className || "".concat(this.nodePrefix).concat(params.interface),
         ancestors: params.ancestors,
         successors: params.successors,
         position: params.position,

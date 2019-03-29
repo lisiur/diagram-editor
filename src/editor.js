@@ -9,6 +9,7 @@ export default class Editor extends EventBase {
      * @param {object} params
      * @param {string|Element} params.container
      * @param {string} params.dragClass
+     * @param {string} [params.nodePrefix]
      */
   constructor (params) {
     super()
@@ -16,6 +17,7 @@ export default class Editor extends EventBase {
     /** @type {Array.<HTMLElement>} */
     this.dragElements = []
     this.dragClass = params.dragClass
+    this.nodePrefix = params.nodePrefix || 'interface-'
 
     this.interfaces = {
       any: new Interface({
@@ -23,26 +25,6 @@ export default class Editor extends EventBase {
         input: ['any'],
         output: 'any'
       })
-      // readTable: new Interface({
-      //   name: 'readTable',
-      //   input: [],
-      //   output: 'id'
-      // }),
-      // sort: new Interface({
-      //   name: 'sort',
-      //   input: ['id'],
-      //   output: 'id'
-      // }),
-      // filter: new Interface({
-      //   name: 'filter',
-      //   input: ['id'],
-      //   output: 'id'
-      // }),
-      // write: new Interface({
-      //   name: 'write',
-      //   input: ['id'],
-      //   output: ''
-      // })
     }
 
     /** @type {Array.<Node>} */
@@ -169,6 +151,7 @@ export default class Editor extends EventBase {
      * @param {object} params
      * @param {boolean} [params.virtual]
      * @param {string} [params.uuid]
+     * @param {string} [params.className]
      * @param {string} [params.interface]
      * @param {String[]} [params.ancestors]
      * @param {String[]} [params.successors]
@@ -190,7 +173,7 @@ export default class Editor extends EventBase {
     const node = new Node({
       interface: this.interfaces[params.interface],
       container: this.container,
-      className: 'item',
+      className: params.className || `${this.nodePrefix}${params.interface}`,
       ancestors: params.ancestors,
       successors: params.successors,
       position: params.position,
