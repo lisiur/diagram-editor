@@ -7,7 +7,7 @@ export default class Editor extends EventBase {
   /**
      *
      * @param {object} params
-     * @param {string} params.container
+     * @param {string|Element} params.container
      * @param {string} params.dragClass
      */
   constructor (params) {
@@ -57,7 +57,11 @@ export default class Editor extends EventBase {
     })
 
     jsPlumb.ready(() => {
-      this.container = document.getElementById(params.container)
+      if (typeof params.container === 'string') {
+        this.container = document.getElementById(params.container)
+      } else {
+        this.container = params.container
+      }
       this.init()
     })
   }
@@ -215,7 +219,7 @@ export default class Editor extends EventBase {
    * @param {Interface[]} interfaceDefs
    */
   registerInterfaces (interfaceDefs) {
-    interfaceDefs.forEach(this.registerInterface)
+    interfaceDefs.forEach(this.registerInterface.bind(this))
   }
 
   toBPMNXml () {

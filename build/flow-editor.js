@@ -27967,7 +27967,7 @@ function (_EventBase) {
   /**
      *
      * @param {object} params
-     * @param {string} params.container
+     * @param {string|Element} params.container
      * @param {string} params.dragClass
      */
   function Editor(params) {
@@ -28019,7 +28019,11 @@ function (_EventBase) {
       virtual: true
     });
     jsPlumb.ready(function () {
-      _this.container = document.getElementById(params.container);
+      if (typeof params.container === 'string') {
+        _this.container = document.getElementById(params.container);
+      } else {
+        _this.container = params.container;
+      }
 
       _this.init();
     });
@@ -28204,7 +28208,7 @@ function (_EventBase) {
   }, {
     key: "registerInterfaces",
     value: function registerInterfaces(interfaceDefs) {
-      interfaceDefs.forEach(this.registerInterface);
+      interfaceDefs.forEach(this.registerInterface.bind(this));
     }
   }, {
     key: "toBPMNXml",
