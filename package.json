@@ -2,6 +2,7 @@
     "name": "flow-editor",
     "version": "0.0.1",
     "main": "build/flow-editor.js",
+    "typings": "./typings/index.d.ts",
     "scripts": {
         "dev": "npx webpack --env.NODE_ENV=development --watch",
         "build": "npx webpack --env.NODE_ENV=production --progress"
