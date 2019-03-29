@@ -62,7 +62,7 @@ export default class BPMN {
     successors.forEach(n => {
       xmlDef.definitions.process[0].sequenceFlow.push({
         $: {
-          id: `${node.uuid}->${n.uuid}`,
+          id: `${node.uuid}.${n.uuid}`,
           name: '',
           sourceRef: node.uuid,
           targetRef: n.uuid

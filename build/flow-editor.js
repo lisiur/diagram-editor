@@ -27860,7 +27860,7 @@ function () {
       successors.forEach(function (n) {
         xmlDef.definitions.process[0].sequenceFlow.push({
           $: {
-            id: "".concat(node.uuid, "->").concat(n.uuid),
+            id: "".concat(node.uuid, ".").concat(n.uuid),
             name: '',
             sourceRef: node.uuid,
             targetRef: n.uuid
@@ -28446,7 +28446,7 @@ function (_EventBase) {
     _classCallCheck(this, Node);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Node).call(this));
-    _this.uuid = params.uuid || Object(uuid__WEBPACK_IMPORTED_MODULE_0__["v1"])();
+    _this.uuid = params.uuid || Object(uuid__WEBPACK_IMPORTED_MODULE_0__["v4"])();
     _this.container = params.container;
     _this.position = params.position;
     _this.className = params.className;
