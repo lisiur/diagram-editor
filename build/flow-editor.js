@@ -28896,14 +28896,16 @@ function (_EventBase) {
 
     var isTarget = params.interface.input.length > 0;
     var isSource = !!params.interface.output;
-    var defaultColor = '#456';
-    var activeColor = '#1890ff';
+    var defaultColor = '#ddd'; // const activeColor = '#1890ff'
+
+    var activeColor = '#ddd';
+    var endPointRadius = 4;
     var common = {
       endpoint: 'Dot',
       paintStyle: {
         fill: defaultColor,
         strokeStyle: defaultColor,
-        radius: 6
+        radius: endPointRadius
       },
       hoverPaintStyle: {
         fill: activeColor,
@@ -28912,7 +28914,7 @@ function (_EventBase) {
       connectorStyle: {
         outlineStroke: defaultColor,
         strokeStyle: defaultColor,
-        strokeWidth: 0.5
+        strokeWidth: 0.25
       },
       connectorHoverStyle: {
         outlineStroke: activeColor,
@@ -28920,13 +28922,13 @@ function (_EventBase) {
         strokeWidth: 1
       },
       connector: ['Flowchart', {
-        gap: 6,
-        cornerRadius: 5,
+        gap: endPointRadius,
+        cornerRadius: 3,
         alwaysRespectStubs: true
       }],
       connectorOverlays: [['Arrow', {
-        width: 12,
-        length: 12,
+        width: 8,
+        length: 8,
         location: 1,
         paintStyle: {
           fill: defaultColor

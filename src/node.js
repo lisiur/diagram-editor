@@ -56,14 +56,16 @@ export default class Node extends EventBase {
     // 设置锚点
     const isTarget = params.interface.input.length > 0
     const isSource = !!params.interface.output
-    const defaultColor = '#456'
-    const activeColor = '#1890ff'
+    const defaultColor = '#ddd'
+    // const activeColor = '#1890ff'
+    const activeColor = '#ddd'
+    const endPointRadius = 4
     const common = {
       endpoint: 'Dot',
       paintStyle: {
         fill: defaultColor,
         strokeStyle: defaultColor,
-        radius: 6,
+        radius: endPointRadius,
       },
       hoverPaintStyle: {
         fill: activeColor,
@@ -72,7 +74,7 @@ export default class Node extends EventBase {
       connectorStyle: {
         outlineStroke: defaultColor,
         strokeStyle: defaultColor,
-        strokeWidth: 0.5,
+        strokeWidth: 0.25,
       },
       connectorHoverStyle: {
         outlineStroke: activeColor,
@@ -81,14 +83,14 @@ export default class Node extends EventBase {
       },
       connector: [
         'Flowchart',
-        { gap: 6, cornerRadius: 5, alwaysRespectStubs: true },
+        { gap: endPointRadius, cornerRadius: 3, alwaysRespectStubs: true },
       ],
       connectorOverlays: [
         [
           'Arrow',
           {
-            width: 12,
-            length: 12,
+            width: 8,
+            length: 8,
             location: 1,
             paintStyle: {
               fill: defaultColor,
