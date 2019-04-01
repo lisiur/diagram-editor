@@ -1,6 +1,6 @@
 {
     "name": "diagram-editor",
-    "version": "0.0.10",
+    "version": "0.0.11",
     "main": "build/flow-editor.js",
     "typings": "./typings/index.d.ts",
     "scripts": {
