@@ -152,9 +152,8 @@ export default class Node extends EventBase {
    * @param {Element | string} params
    */
   render(params) {
-    let element
     if (typeof params === 'string') {
-      element.innerHTML = params
+      this.element.innerHTML = params
     } else {
       this.element.innerHTML = ''
       this.element.append(params)

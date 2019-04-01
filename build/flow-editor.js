@@ -28987,10 +28987,8 @@ function (_EventBase) {
   _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_1___default()(Node, [{
     key: "render",
     value: function render(params) {
-      var element;
-
       if (typeof params === 'string') {
-        element.innerHTML = params;
+        this.element.innerHTML = params;
       } else {
         this.element.innerHTML = '';
         this.element.append(params);
