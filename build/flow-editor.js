@@ -28378,6 +28378,8 @@ function (_EventBase) {
   }, {
     key: "initJsplumb",
     value: function initJsplumb() {
+      var _this3 = this;
+
       var startNode = this.startNode,
           endNode = this.endNode;
       jsPlumb.setContainer(this.container); // connection link event
@@ -28401,6 +28403,8 @@ function (_EventBase) {
         _node__WEBPACK_IMPORTED_MODULE_7__["default"].removeLink(sourceNode, endNode); // 添加源节点和目标节点的链接
 
         _node__WEBPACK_IMPORTED_MODULE_7__["default"].addLink(sourceNode, targetNode);
+
+        _this3.emit('connection', [sourceNode, targetNode]);
       }); // connection before link event
 
       jsPlumb.bind('beforeDrop', function (info, _) {
@@ -28408,7 +28412,22 @@ function (_EventBase) {
             source = _info$connection$endp[0];
 
         var target = info.dropEndpoint;
-        return source.getParameters().source.node !== target.getParameters().target.node;
+        /** @type {Node} */
+
+        var sourceNode = source.getParameters().source.node;
+        /** @type {Node} */
+
+        var targetNode = target.getParameters().target.node;
+
+        if (sourceNode === targetNode) {
+          return false;
+        }
+
+        if (!_interface__WEBPACK_IMPORTED_MODULE_8__["default"].validate(sourceNode.interface, targetNode.interface)) {
+          return false;
+        }
+
+        return true;
       }); // disable default contextmenu
 
       this.container.addEventListener('contextmenu', function (e) {
@@ -28426,13 +28445,13 @@ function (_EventBase) {
   }, {
     key: "registerNodeEvent",
     value: function registerNodeEvent(node) {
-      var _this3 = this;
+      var _this4 = this;
 
       ;
       ['contextmenu', 'click', 'dblclick'].forEach(function (eventName) {
         node.on(eventName, function (params, event) {
-          return _this3.emit(eventName, params, event);
-        }, _this3);
+          return _this4.emit(eventName, params, event);
+        }, _this4);
       });
       node.on('mouseup',
       /**
@@ -28537,7 +28556,7 @@ function (_EventBase) {
   }, {
     key: "toJson",
     value: function toJson() {
-      var _this4 = this;
+      var _this5 = this;
 
       var processId = this.processId;
       var connections = [];
@@ -28555,7 +28574,7 @@ function (_EventBase) {
         });
         var sourceUuid = node.endpointsUuid.bottom;
         node.successors.forEach(function (uuid) {
-          var targetNode = _this4.nodes.find(function (it) {
+          var targetNode = _this5.nodes.find(function (it) {
             return it.uuid === uuid;
           });
 
@@ -28576,8 +28595,8 @@ function (_EventBase) {
 
   }, {
     key: "load",
-    value: function load(json) {
-      var _this5 = this;
+    value: function load(json, render) {
+      var _this6 = this;
 
       var processId = json.processId,
           processNodes = json.processNodes,
@@ -28595,7 +28614,9 @@ function (_EventBase) {
       this.startNode.successors = startNodeParams.successors;
       this.endNode.ancestors = endNodeParams.ancestors;
       userNodes.forEach(function (params) {
-        _this5.addNode(params);
+        var node = _this6.addNode(params);
+
+        render && render(node);
       });
       connections.forEach(function (_ref) {
         var _ref2 = _babel_runtime_helpers_slicedToArray__WEBPACK_IMPORTED_MODULE_0___default()(_ref, 2),
@@ -28715,48 +28736,43 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Interface; });
-/* harmony import */ var _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/classCallCheck */ "./node_modules/@babel/runtime/helpers/classCallCheck.js");
-/* harmony import */ var _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @babel/runtime/helpers/createClass */ "./node_modules/@babel/runtime/helpers/createClass.js");
-/* harmony import */ var _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/classCallCheck */ "./node_modules/@babel/runtime/helpers/classCallCheck.js");
+/* harmony import */ var _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/createClass */ "./node_modules/@babel/runtime/helpers/createClass.js");
+/* harmony import */ var _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_1__);
 
 
 
-/**
- * @typedef {object} Type
- * @property {string} name
- * @property {boolean} required
- */
 var Interface =
 /*#__PURE__*/
 function () {
   /**
-     *
-     * @param {object} [params]
-     * @param {string[]} params.name
-     * @param {string[]} params.input
-     * @param {string} params.output
-     */
+   *
+   * @param {object} [params]
+   * @param {string[]} params.name
+   * @param {string[]} params.input
+   * @param {string} params.output
+   */
   function Interface(params) {
-    _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_1___default()(this, Interface);
+    _babel_runtime_helpers_classCallCheck__WEBPACK_IMPORTED_MODULE_0___default()(this, Interface);
 
     this.name = params.name;
     this.input = params.input;
     this.output = params.output;
   }
   /**
-     * @param {string[]} input
-     */
+   * @param {string[]} input
+   */
 
 
-  _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_2___default()(Interface, [{
+  _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_1___default()(Interface, [{
     key: "setInput",
     value: function setInput(input) {
       this.input = input;
     }
     /**
-       * @param {string} output
-       */
+     * @param {string} output
+     */
 
   }, {
     key: "setOutput",
@@ -28772,11 +28788,11 @@ function () {
 
 Interface.validate =
 /**
- * @param {Type} output
- * @param {Type} input
+ * @param {Interface} source
+ * @param {Interface} target
  */
-function (output, input) {
-  return output.name === input.name;
+function (source, target) {
+  return target.input.includes(source.output);
 };
 
 Interface.isSameType =

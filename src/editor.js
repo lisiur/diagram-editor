@@ -95,7 +95,7 @@ export default class Editor extends EventBase {
     jsPlumb.setContainer(this.container)
 
     // connection link event
-    jsPlumb.bind('connection', function(info) {
+    jsPlumb.bind('connection', info => {
       const { connection } = info
       const { source, target } = connection.getParameters()
 
@@ -111,16 +111,25 @@ export default class Editor extends EventBase {
       Node.removeLink(sourceNode, endNode)
       // 添加源节点和目标节点的链接
       Node.addLink(sourceNode, targetNode)
+
+      this.emit('connection', [sourceNode, targetNode])
     })
 
     // connection before link event
     jsPlumb.bind('beforeDrop', function(info, _) {
       const [source] = info.connection.endpoints
       const target = info.dropEndpoint
-      return (
-        source.getParameters().source.node !==
-        target.getParameters().target.node
-      )
+      /** @type {Node} */
+      const sourceNode = source.getParameters().source.node
+      /** @type {Node} */
+      const targetNode = target.getParameters().target.node
+      if (sourceNode === targetNode) {
+        return false
+      }
+      if (!Interface.validate(sourceNode.interface, targetNode.interface)) {
+        return false
+      }
+      return true
     })
 
     // disable default contextmenu
@@ -257,7 +266,7 @@ export default class Editor extends EventBase {
    *
    * @param {Process} json
    */
-  load(json) {
+  load(json, render) {
     const { processId, processNodes, connections } = json
     this.processId = processId
     const userNodes = processNodes.filter(node => !node.virtual)
@@ -266,7 +275,8 @@ export default class Editor extends EventBase {
     this.startNode.successors = startNodeParams.successors
     this.endNode.ancestors = endNodeParams.ancestors
     userNodes.forEach(params => {
-      this.addNode(params)
+      const node = this.addNode(params)
+      render && render(node)
     })
     connections.forEach(([sourceUuid, targetUuid]) => {
       jsPlumb.connect({ uuids: [sourceUuid, targetUuid] })
