@@ -169,6 +169,7 @@ export default class Node extends EventBase {
     const { width, height } = element.getBoundingClientRect()
     element.style.left = `${this.position.x - width / 2}px`
     element.style.top = `${this.position.y - height / 2}px`
+    jsPlumb.repaintEverything()
   }
 
   /**

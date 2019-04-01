@@ -29010,6 +29010,7 @@ function (_EventBase) {
 
       element.style.left = "".concat(this.position.x - width / 2, "px");
       element.style.top = "".concat(this.position.y - height / 2, "px");
+      jsPlumb.repaintEverything();
     }
     /**
      * @param {string} uuid
