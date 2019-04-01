@@ -20,6 +20,7 @@ declare interface BPMN {
       $: {
         id: string
         name: string
+        isExecutable: boolean
       }
       sequenceFlow: Array<{
         $: {

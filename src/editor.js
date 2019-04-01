@@ -1,3 +1,4 @@
+import { v4 as uuid } from 'uuid'
 import Node from './node'
 import Interface from './interface'
 import EventBase from './eventBase'
@@ -5,37 +6,40 @@ import BPMN from './bpmn'
 const jsPlumb = window.jsPlumb
 export default class Editor extends EventBase {
   /**
-     *
-     * @param {object} params
-     * @param {string|Element} params.container
-     * @param {string} params.dragClass
-     * @param {string} [params.nodePrefix]
-     */
-  constructor (params) {
+   *
+   * @param {object} params
+   * @param {string|Element} params.container
+   * @param {string} params.dragClass
+   * @param {string} [params.nodePrefix]
+   */
+  constructor(params) {
     super()
 
+    this.processId = `_${uuid()}`
     /** @type {Array.<HTMLElement>} */
     this.dragElements = []
+    /** 可拖拽的元素class */
     this.dragClass = params.dragClass
+    /** 自定义不同节点渲染的类名前缀 */
     this.nodePrefix = params.nodePrefix || 'interface-'
 
     this.interfaces = {
       any: new Interface({
         name: 'any',
         input: ['any'],
-        output: 'any'
-      })
+        output: 'any',
+      }),
     }
 
     /** @type {Array.<Node>} */
     this.nodes = []
     this.startNode = this.addNode({
       uuid: 'start',
-      virtual: true
+      virtual: true,
     })
     this.endNode = this.addNode({
       uuid: 'end',
-      virtual: true
+      virtual: true,
     })
 
     jsPlumb.ready(() => {
@@ -47,12 +51,13 @@ export default class Editor extends EventBase {
       this.init()
     })
   }
-  init () {
+  init() {
     this.initDragElement()
     this.initJsplumb()
+    this.emit('ready')
   }
 
-  initDragElement () {
+  initDragElement() {
     this.dragElements = Array.from(
       document.querySelectorAll(`.${this.dragClass}`)
     )
@@ -73,8 +78,8 @@ export default class Editor extends EventBase {
         interface: type,
         position: {
           x: layerX,
-          y: layerY
-        }
+          y: layerY,
+        },
       })
       Node.addLink(this.startNode, newNode)
       Node.addLink(newNode, this.endNode)
@@ -84,12 +89,12 @@ export default class Editor extends EventBase {
     })
   }
 
-  initJsplumb () {
+  initJsplumb() {
     const { startNode, endNode } = this
     jsPlumb.setContainer(this.container)
 
     // connection link event
-    jsPlumb.bind('connection', function (info) {
+    jsPlumb.bind('connection', function(info) {
       const { connection } = info
       const { source, target } = connection.getParameters()
 
@@ -108,15 +113,18 @@ export default class Editor extends EventBase {
     })
 
     // connection before link event
-    jsPlumb.bind('beforeDrop', function (info, _) {
+    jsPlumb.bind('beforeDrop', function(info, _) {
       const [source] = info.connection.endpoints
       const target = info.dropEndpoint
-      return source.getParameters().source.node !== target.getParameters().target.node
+      return (
+        source.getParameters().source.node !==
+        target.getParameters().target.node
+      )
     })
 
     // disable default contextmenu
     this.container.addEventListener('contextmenu', e => e.preventDefault())
-    jsPlumb.bind('contextmenu', function (component) {
+    jsPlumb.bind('contextmenu', function(component) {
       console.log(component)
     })
   }
@@ -125,7 +133,7 @@ export default class Editor extends EventBase {
    *
    * @param {Node} node
    */
-  registerNodeEvent (node) {
+  registerNodeEvent(node) {
     ;['contextmenu', 'click', 'dblclick'].forEach(eventName => {
       node.on(
         eventName,
@@ -133,40 +141,36 @@ export default class Editor extends EventBase {
         this
       )
     })
-    node.on('mouseup',
-    /**
-     * @param {Node} target
-     * @param {MouseEvent} event
-     */
+    node.on(
+      'mouseup',
+      /**
+       * @param {Node} target
+       * @param {MouseEvent} event
+       */
       (target, event) => {
-        const { layerX, layerY } = event
+        const { left: leftPx, top: topPx } = target.element.style
+        const left = parseFloat(leftPx)
+        const top = parseFloat(topPx)
+        const { width, height } = target.element.getBoundingClientRect()
         target.position = {
-          x: layerX,
-          y: layerY
+          x: left + width / 2,
+          y: top + height / 2,
         }
-      })
+      }
+    )
   }
   /**
-     *
-     * @param {object} params
-     * @param {boolean} [params.virtual]
-     * @param {string} [params.uuid]
-     * @param {string} [params.className]
-     * @param {string} [params.interface]
-     * @param {String[]} [params.ancestors]
-     * @param {String[]} [params.successors]
-     * @param {object} [params.position]
-     * @param {number} params.position.x
-     * @param {number} params.position.y
-     */
-  addNode (params) {
+   *
+   * @param {import('../typings').addNodeParams} params
+   */
+  addNode(params) {
     params = Object.assign(
       {
         interface: 'any',
         container: this.container,
         ancestors: [],
         successors: [],
-        position: { x: 0, y: 0 }
+        position: { x: 0, y: 0 },
       },
       params
     )
@@ -178,7 +182,8 @@ export default class Editor extends EventBase {
       successors: params.successors,
       position: params.position,
       uuid: params.uuid,
-      virtual: params.virtual
+      virtual: params.virtual,
+      endpointsUuid: params.endpointsUuid,
     })
     this.nodes.push(node)
     this.registerNodeEvent(node)
@@ -193,7 +198,7 @@ export default class Editor extends EventBase {
    *
    * @param {Interface} interfaceDef
    */
-  registerInterface (interfaceDef) {
+  registerInterface(interfaceDef) {
     this.interfaces[interfaceDef.name] = interfaceDef
   }
 
@@ -201,11 +206,69 @@ export default class Editor extends EventBase {
    *
    * @param {Interface[]} interfaceDefs
    */
-  registerInterfaces (interfaceDefs) {
+  registerInterfaces(interfaceDefs) {
     interfaceDefs.forEach(this.registerInterface.bind(this))
   }
 
-  toBPMNXml () {
+  toBPMNXml() {
     return new BPMN({ nodes: this.nodes, startNode: this.startNode }).toXML()
+  }
+
+  /**
+   * @typedef {object} Process
+   * @property {string} process.processId
+   * @property {Array.<import('../typings').addNodeParams>} process.processNodes
+   * @property {Array.<[string, string]>} process.connections
+   */
+  /**
+   * @returns {Process}
+   */
+  toJson() {
+    const processId = this.processId
+    const connections = []
+    const processNodes = []
+    this.nodes.forEach(node => {
+      processNodes.push({
+        className: node.className,
+        interface: node.interface.name,
+        uuid: node.uuid,
+        virtual: node.virtual,
+        position: node.position,
+        ancestors: node.ancestors,
+        successors: node.successors,
+        endpointsUuid: node.endpointsUuid,
+      })
+      const sourceUuid = node.endpointsUuid.bottom
+      node.successors.forEach(uuid => {
+        const targetNode = this.nodes.find(it => it.uuid === uuid)
+        const targetUuid = targetNode.endpointsUuid.top
+        connections.push([sourceUuid, targetUuid])
+      })
+    })
+    return {
+      processId,
+      processNodes,
+      connections,
+    }
+  }
+
+  /**
+   *
+   * @param {Process} json
+   */
+  load(json) {
+    const { processId, processNodes, connections } = json
+    this.processId = processId
+    const userNodes = processNodes.filter(node => !node.virtual)
+    const startNodeParams = processNodes.find(node => node.uuid === 'start')
+    const endNodeParams = processNodes.find(node => node.uuid === 'end')
+    this.startNode.successors = startNodeParams.successors
+    this.endNode.ancestors = endNodeParams.ancestors
+    userNodes.forEach(params => {
+      this.addNode(params)
+    })
+    connections.forEach(([sourceUuid, targetUuid]) => {
+      jsPlumb.connect({ uuids: [sourceUuid, targetUuid] })
+    })
   }
 }

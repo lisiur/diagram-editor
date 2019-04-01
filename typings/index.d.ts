@@ -3,8 +3,14 @@ namespace Editor {
     uuid?: string
     interface?: string
     ancestors?: [string]
+    className?: string
     successors?: [string]
+    virtual: boolean
     position?: { x: number; y: number }
+    endpointsUuid?: {
+      top: [string]
+      bottom: string
+    }
   }
   interface InterfaceParams {
     name: string

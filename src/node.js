@@ -5,22 +5,34 @@ import * as R from 'ramda'
 const jsPlumb = window.jsPlumb
 export default class Node extends EventBase {
   /**
-     * @param {object} params
-     * @param {boolean} params.virtual
-     * @param {Element} params.container
-     * @param {string} [params.uuid]
-     * @param {Interface} params.interface
-     * @param {String[]} [params.ancestors]
-     * @param {String[]} [params.successors]
-     * @param {string} [params.className]
-     * @param {object} params.position
-     * @param {number} params.position.x
-     * @param {number} params.position.y
-     */
-  constructor (params) {
+   * @param {object} params
+   * @param {boolean} params.virtual
+   * @param {Element} params.container
+   * @param {string} [params.uuid]
+   * @param {object} [params.endpointsUuid]
+   * @param {string} [params.endpointsUuid.top]
+   * @param {string} [params.endpointsUuid.bottom]
+   * @param {Interface} params.interface
+   * @param {String[]} [params.ancestors]
+   * @param {String[]} [params.successors]
+   * @param {string} [params.className]
+   * @param {object} params.position
+   * @param {number} params.position.x
+   * @param {number} params.position.y
+   */
+  constructor(params) {
     super()
 
-    this.uuid = params.uuid || uuid()
+    this.uuid = params.uuid || `_${uuid()}`
+    this.interface = params.interface || new Interface()
+    /** @type {String[]} */
+    this.ancestors = params.ancestors || []
+    /** @type {String[]} */
+    this.successors = params.successors || []
+    this.endpointsUuid = params.endpointsUuid || {
+      top: `_${uuid()}`,
+      bottom: `_${uuid()}`,
+    }
     this.container = params.container
     this.position = params.position
     this.className = params.className
@@ -30,9 +42,7 @@ export default class Node extends EventBase {
     element.setAttribute('id', this.uuid)
     element.setAttribute('class', params.className)
     ;['contextmenu', 'click', 'dblclick', 'mouseup'].forEach(eventName => {
-      element.addEventListener(eventName, e =>
-        this.emit(eventName, this, e)
-      )
+      element.addEventListener(eventName, e => this.emit(eventName, this, e))
     })
     this.element = element
 
@@ -42,14 +52,6 @@ export default class Node extends EventBase {
     const { width, height } = element.getBoundingClientRect()
     element.style.left = `${params.position.x - width / 2}px`
     element.style.top = `${params.position.y - height / 2}px`
-
-    this.interface = params.interface || new Interface()
-
-    /** @type {String[]} */
-    this.ancestors = params.ancestors || []
-
-    /** @type {String[]} */
-    this.successors = params.successors || []
 
     // 设置锚点
     const isTarget = params.interface.input.length > 0
@@ -61,25 +63,25 @@ export default class Node extends EventBase {
       paintStyle: {
         fill: defaultColor,
         strokeStyle: defaultColor,
-        radius: 6
+        radius: 6,
       },
       hoverPaintStyle: {
         fill: activeColor,
-        strokeStyle: activeColor
+        strokeStyle: activeColor,
       },
       connectorStyle: {
         outlineStroke: defaultColor,
         strokeStyle: defaultColor,
-        strokeWidth: 0.5
+        strokeWidth: 0.5,
       },
       connectorHoverStyle: {
         outlineStroke: activeColor,
         strokeStyle: activeColor,
-        strokeWidth: 1
+        strokeWidth: 1,
       },
       connector: [
         'Flowchart',
-        { gap: 6, cornerRadius: 5, alwaysRespectStubs: true }
+        { gap: 6, cornerRadius: 5, alwaysRespectStubs: true },
       ],
       connectorOverlays: [
         [
@@ -89,39 +91,39 @@ export default class Node extends EventBase {
             length: 12,
             location: 1,
             paintStyle: {
-              fill: defaultColor
-            }
-          }
-        ]
-      ]
+              fill: defaultColor,
+            },
+          },
+        ],
+      ],
     }
     if (isTarget && !params.virtual) {
-      params.interface.input.forEach(type => {
-        jsPlumb.addEndpoint(
-          element,
-          {
-            isTarget: true,
-            isSource: false,
-            anchor: 'Top',
-            maxConnections: -1,
-            parameters: {
-              target: {
-                node: this,
-                type,
-                input: true,
-                output: false
-              }
-            }
+      jsPlumb.addEndpoint(
+        element,
+        {
+          uuid: this.endpointsUuid.top,
+          isTarget: true,
+          isSource: false,
+          anchor: 'Top',
+          maxConnections: params.interface.input.length,
+          parameters: {
+            target: {
+              node: this,
+              type: params.interface.input,
+              input: true,
+              output: false,
+            },
           },
-          // @ts-ignore
-          common
-        )
-      })
+        },
+        // @ts-ignore
+        common
+      )
     }
     if (isSource && !params.virtual) {
       jsPlumb.addEndpoint(
         element,
         {
+          uuid: this.endpointsUuid.bottom,
           isSource: true,
           isTarget: false,
           anchor: 'Bottom',
@@ -131,9 +133,9 @@ export default class Node extends EventBase {
               node: this,
               type: params.interface.output,
               input: false,
-              output: true
-            }
-          }
+              output: true,
+            },
+          },
         },
         // @ts-ignore
         common
@@ -146,34 +148,34 @@ export default class Node extends EventBase {
   }
 
   /**
-     * @param {string} uuid
-     */
-  addAncestors (uuid) {
+   * @param {string} uuid
+   */
+  addAncestors(uuid) {
     if (!this.ancestors.includes(uuid)) {
       this.ancestors.push(uuid)
     }
   }
 
   /**
-     * @param {string} uuid
-     */
-  removeAncestors (uuid) {
+   * @param {string} uuid
+   */
+  removeAncestors(uuid) {
     this.ancestors = this.ancestors.filter(item => item !== uuid)
   }
 
   /**
-     * @param {string} uuid
-     */
-  addSuccessors (uuid) {
+   * @param {string} uuid
+   */
+  addSuccessors(uuid) {
     if (!this.successors.includes(uuid)) {
       this.successors.push(uuid)
     }
   }
 
   /**
-     * @param {string} uuid
-     */
-  removeSuccessors (uuid) {
+   * @param {string} uuid
+   */
+  removeSuccessors(uuid) {
     this.successors = this.successors.filter(item => item !== uuid)
   }
 }
