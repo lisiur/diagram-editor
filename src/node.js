@@ -158,6 +158,17 @@ export default class Node extends EventBase {
       this.element.innerHTML = ''
       this.element.append(params)
     }
+    this.fixPosition(this.element)
+  }
+
+  /**
+   *
+   * @param {Element} element
+   */
+  fixPosition(element) {
+    const { width, height } = element.getBoundingClientRect()
+    element.style.left = `${this.position.x - width / 2}px`
+    element.style.top = `${this.position.y - height / 2}px`
   }
 
   /**

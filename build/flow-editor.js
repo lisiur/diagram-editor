@@ -28993,6 +28993,23 @@ function (_EventBase) {
         this.element.innerHTML = '';
         this.element.append(params);
       }
+
+      this.fixPosition(this.element);
+    }
+    /**
+     *
+     * @param {Element} element
+     */
+
+  }, {
+    key: "fixPosition",
+    value: function fixPosition(element) {
+      var _element$getBoundingC2 = element.getBoundingClientRect(),
+          width = _element$getBoundingC2.width,
+          height = _element$getBoundingC2.height;
+
+      element.style.left = "".concat(this.position.x - width / 2, "px");
+      element.style.top = "".concat(this.position.y - height / 2, "px");
     }
     /**
      * @param {string} uuid
