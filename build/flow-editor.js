@@ -28334,14 +28334,18 @@ function (_EventBase) {
   _babel_runtime_helpers_createClass__WEBPACK_IMPORTED_MODULE_2___default()(Editor, [{
     key: "init",
     value: function init() {
+      var _this2 = this;
+
       this.initDragElement();
       this.initJsplumb();
-      this.emit('ready');
+      setTimeout(function () {
+        return _this2.emit('ready');
+      }, 0);
     }
   }, {
     key: "initDragElement",
     value: function initDragElement() {
-      var _this2 = this;
+      var _this3 = this;
 
       this.dragElements = Array.from(document.querySelectorAll(".".concat(this.dragClass)));
       this.dragElements.forEach(function (el) {
@@ -28358,7 +28362,7 @@ function (_EventBase) {
         var layerX = e.layerX,
             layerY = e.layerY;
 
-        var newNode = _this2.addNode({
+        var newNode = _this3.addNode({
           interface: type,
           position: {
             x: layerX,
@@ -28366,10 +28370,10 @@ function (_EventBase) {
           }
         });
 
-        _node__WEBPACK_IMPORTED_MODULE_7__["default"].addLink(_this2.startNode, newNode);
-        _node__WEBPACK_IMPORTED_MODULE_7__["default"].addLink(newNode, _this2.endNode);
+        _node__WEBPACK_IMPORTED_MODULE_7__["default"].addLink(_this3.startNode, newNode);
+        _node__WEBPACK_IMPORTED_MODULE_7__["default"].addLink(newNode, _this3.endNode);
 
-        _this2.emit('add-node', newNode);
+        _this3.emit('add-node', newNode);
       });
       this.container.addEventListener('dragover', function (e) {
         e.preventDefault();
@@ -28378,7 +28382,7 @@ function (_EventBase) {
   }, {
     key: "initJsplumb",
     value: function initJsplumb() {
-      var _this3 = this;
+      var _this4 = this;
 
       var startNode = this.startNode,
           endNode = this.endNode;
@@ -28404,7 +28408,7 @@ function (_EventBase) {
 
         _node__WEBPACK_IMPORTED_MODULE_7__["default"].addLink(sourceNode, targetNode);
 
-        _this3.emit('connection', [sourceNode, targetNode]);
+        _this4.emit('connection', [sourceNode, targetNode]);
       }); // connection before link event
 
       jsPlumb.bind('beforeDrop', function (info, _) {
@@ -28445,13 +28449,13 @@ function (_EventBase) {
   }, {
     key: "registerNodeEvent",
     value: function registerNodeEvent(node) {
-      var _this4 = this;
+      var _this5 = this;
 
       ;
       ['contextmenu', 'click', 'dblclick'].forEach(function (eventName) {
         node.on(eventName, function (params, event) {
-          return _this4.emit(eventName, params, event);
-        }, _this4);
+          return _this5.emit(eventName, params, event);
+        }, _this5);
       });
       node.on('mouseup',
       /**
@@ -28556,7 +28560,7 @@ function (_EventBase) {
   }, {
     key: "toJson",
     value: function toJson() {
-      var _this5 = this;
+      var _this6 = this;
 
       var processId = this.processId;
       var connections = [];
@@ -28574,7 +28578,7 @@ function (_EventBase) {
         });
         var sourceUuid = node.endpointsUuid.bottom;
         node.successors.forEach(function (uuid) {
-          var targetNode = _this5.nodes.find(function (it) {
+          var targetNode = _this6.nodes.find(function (it) {
             return it.uuid === uuid;
           });
 
@@ -28596,7 +28600,7 @@ function (_EventBase) {
   }, {
     key: "load",
     value: function load(json, render) {
-      var _this6 = this;
+      var _this7 = this;
 
       var processId = json.processId,
           processNodes = json.processNodes,
@@ -28614,7 +28618,7 @@ function (_EventBase) {
       this.startNode.successors = startNodeParams.successors;
       this.endNode.ancestors = endNodeParams.ancestors;
       userNodes.forEach(function (params) {
-        var node = _this6.addNode(params);
+        var node = _this7.addNode(params);
 
         render && render(node);
       });

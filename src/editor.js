@@ -54,7 +54,7 @@ export default class Editor extends EventBase {
   init() {
     this.initDragElement()
     this.initJsplumb()
-    this.emit('ready')
+    setTimeout(() => this.emit('ready'), 0)
   }
 
   initDragElement() {
