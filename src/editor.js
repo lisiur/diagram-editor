@@ -83,6 +83,7 @@ export default class Editor extends EventBase {
       })
       Node.addLink(this.startNode, newNode)
       Node.addLink(newNode, this.endNode)
+      this.emit('add-node', newNode)
     })
     this.container.addEventListener('dragover', e => {
       e.preventDefault()
