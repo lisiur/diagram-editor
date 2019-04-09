@@ -1,1 +1,1 @@
-# g6-editor
+# diagram-editor
